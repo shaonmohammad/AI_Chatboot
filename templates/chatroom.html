@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: calc(100vh - 160px);
+        }
+        .message-bubble {
+            max-width: 80%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .typing-indicator span {
+            animation: blink 1.4s infinite;
+            animation-fill-mode: both;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink {
+            0% { opacity: 0.1; }
+            20% { opacity: 1; }
+            100% { opacity: 0.1; }
+        }
+    </style>
+    <script>
+        // Save scroll position before page unload
+        window.onbeforeunload = function() {
+            const chatContainer = document.querySelector('.chat-container');
+            localStorage.setItem('scrollPosition', chatContainer.scrollTop);
+        };
+
+        // Restore scroll position after page load
+        window.onload = function() {
+            const chatContainer = document.querySelector('.chat-container');
+            const savedPosition = localStorage.getItem('scrollPosition');
+            
+            if (savedPosition) {
+                chatContainer.scrollTop = parseInt(savedPosition);
+            } else {
+                // If no saved position, scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        };
+
+        // Additional function to scroll to bottom when new messages are added
+        function scrollToBottom() {
+            const chatContainer = document.querySelector('.chat-container');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="bg-white rounded-t-lg shadow-lg p-4 flex items-center space-x-4">
+            <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+                <i class="fas fa-robot text-white text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">AI Assistant</h1>
+                <p class="text-sm text-gray-600">Always here to help</p>
+            </div>
+            <div class="ml-auto">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    Online
+                </span>
+            </div>
+            <div class="ml-4">
+                <a href="{% url 'logout' %}" 
+                class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="bg-white shadow-lg">
+            <div class="chat-container overflow-y-auto p-4 space-y-4">
+                {% for chat in chats %}
+                    <!-- User Message -->
+                    <div class="flex items-start justify-end space-x-2">
+                        <div class="message-bubble bg-blue-500 rounded-lg p-3">
+                            <p class="text-white">{{chat.question}}</p>
+                        </div>
+                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-gray-600 text-sm"></i>
+                        </div>
+                    </div>
+                    
+                     <!-- Bot Message -->
+                    <div class="flex items-start space-x-2">
+                        <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-robot text-white text-sm"></i>
+                        </div>
+                        <div class="message-bubble bg-gray-100 rounded-lg p-3">
+                            <p class="text-gray-800">{{chat.response}}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <!-- Typing Indicator -->
+                <div class="flex items-start space-x-2">
+                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-robot text-white text-sm"></i>
+                    </div>
+                    <div class="message-bubble bg-gray-100 rounded-lg p-3">
+                        <div class="typing-indicator">
+                            <span class="mx-1">•</span>
+                            <span class="mx-1">•</span>
+                            <span class="mx-1">•</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="border-t p-4">
+                <form method="POST" class="flex space-x-4" onsubmit="scrollToBottom()">
+                    <div class="flex-1 relative">
+                        <input type="text" 
+                               name="question"
+                               id="question"
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10" 
+                               placeholder="Type your message...">
+                               
+                        <button type="button" class="absolute right-2 top-2 text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                    </div>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Send
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
